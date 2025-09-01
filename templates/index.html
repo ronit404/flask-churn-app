@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Churn Predictor Pro{% endblock %}
+
+{% block sidebar %}
+    <div class="sidebar-header">
+        <h2><i class="fas fa-chart-line me-2"></i>Churn Predictor Pro</h2>
+        <p>AI-powered customer retention insights</p>
+    </div>
+    
+    <div class="user-info mb-4">
+        <div class="d-flex align-items-center">
+            <div class="user-avatar me-3">
+                <i class="fas fa-user-circle fa-2x text-primary"></i>
+            </div>
+            <div>
+                <h6 class="mb-0">{{ session.get('username', 'User') }}</h6>
+                <small class="text-muted">Analyst</small>
+            </div>
+        </div>
+    </div>
+
+    <form action="/predict" method="post" class="prediction-form">
+        <div class="form-section">
+            <h6 class="section-title">
+                <i class="fas fa-user me-2"></i>Customer Profile
+            </h6>
+            
+            <div class="mb-3">
+                <label for="tenure" class="form-label">
+                    <i class="fas fa-clock me-1"></i>Tenure (months)
+                    <span class="text-danger">*</span>
+                </label>
+                <input type="number" class="form-control" id="tenure" name="tenure" 
+                       required placeholder="e.g., 12" min="0" max="120">
+                <small class="form-text text-muted">How long has the customer been with us?</small>
+            </div>
+            
+            <div class="mb-3">
+                <label for="monthly_charges" class="form-label">
+                    <i class="fas fa-dollar-sign me-1"></i>Monthly Charges ($)
+                    <span class="text-danger">*</span>
+                </label>
+                <input type="number" step="0.01" class="form-control" id="monthly_charges" 
+                       name="monthly_charges" required placeholder="e.g., 75.50" min="0">
+                <small class="form-text text-muted">Current monthly billing amount</small>
+            </div>
+            
+            <div class="mb-3">
+                <label for="contract" class="form-label">
+                    <i class="fas fa-file-contract me-1"></i>Contract Type
+                    <span class="text-danger">*</span>
+                </label>
+                <select id="contract" name="contract" class="form-select">
+                    <option value="Month-to-month">Month-to-month</option>
+                    <option value="One year">One year</option>
+                    <option value="Two year">Two year</option>
+                </select>
+                <small class="form-text text-muted">Current contract duration</small>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h6 class="section-title">
+                <i class="fas fa-users me-2"></i>Demographics
+            </h6>
+            
+            <div class="row">
+                <div class="col-6 mb-3">
+                    <label for="partner" class="form-label">
+                        <i class="fas fa-heart me-1"></i>Partner
+                    </label>
+                    <select id="partner" name="partner" class="form-select">
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+                <div class="col-6 mb-3">
+                    <label for="dependents" class="form-label">
+                        <i class="fas fa-baby me-1"></i>Dependents
+                    </label>
+                    <select id="dependents" name="dependents" class="form-select">
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-6 mb-3">
+                    <label for="gender" class="form-label">
+                        <i class="fas fa-venus-mars me-1"></i>Gender
+                    </label>
+                    <select id="gender" name="gender" class="form-select">
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                </div>
+                <div class="col-6 mb-3">
+                    <label for="payment_method" class="form-label">
+                        <i class="fas fa-credit-card me-1"></i>Payment Method
+                    </label>
+                    <select id="payment_method" name="payment_method" class="form-select">
+                        <option value="Electronic check">Electronic check</option>
+                        <option value="Mailed check">Mailed check</option>
+                        <option value="Bank transfer (automatic)">Bank transfer</option>
+                        <option value="Credit card (automatic)">Credit card</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h6 class="section-title">
+                <i class="fas fa-wifi me-2"></i>Services
+            </h6>
+            
+            <div class="mb-3">
+                <label for="internet_service" class="form-label">
+                    <i class="fas fa-globe me-1"></i>Internet Service
+                </label>
+                <select id="internet_service" name="internet_service" class="form-select">
+                    <option value="DSL">DSL</option>
+                    <option value="Fiber optic">Fiber optic</option>
+                    <option value="No">No internet</option>
+                </select>
+            </div>
+            
+            <div class="mb-3">
+                <label for="online_security" class="form-label">
+                    <i class="fas fa-shield-alt me-1"></i>Online Security
+                </label>
+                <select id="online_security" name="online_security" class="form-select">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                    <option value="No internet service">N/A</option>
+                </select>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 mt-4">
+            <i class="fas fa-magic me-2"></i>Predict Churn Risk
+        </button>
+    </form>
+    
+    <div class="text-center mt-4">
+        <a href="/logout" class="btn btn-outline-danger btn-sm">
+            <i class="fas fa-sign-out-alt me-1"></i>Logout
+        </a>
+    </div>
+{% endblock %}
+
+{% block main_content %}
+    {% if prediction_text %}
+        <!-- Prediction Results -->
+        <div class="prediction-card">
+            <div class="prediction-result">
+                <div class="d-flex align-items-center mb-3">
+                    {% if "LIKELY" in prediction_text %}
+                        <div class="status-indicator status-likely me-3">
+                            <i class="fas fa-exclamation-triangle me-1"></i>High Risk
+                        </div>
+                    {% else %}
+                        <div class="status-indicator status-unlikely me-3">
+                            <i class="fas fa-check-circle me-1"></i>Low Risk
+                        </div>
+                    {% endif %}
+                    <h2 class="prediction-text mb-0">{{ prediction_text }}</h2>
+                </div>
+                
+                <div class="confidence-badge">
+                    <i class="fas fa-chart-pie me-1"></i>Confidence: {{ confidence_score }}
+                </div>
+            </div>
+        </div>
+
+        {% if top_factors %}
+            <div class="factors-section">
+                <h5>
+                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                    Top Risk Factors
+                </h5>
+                {% for factor in top_factors %}
+                    <div class="factor-item">
+                        <i class="fas fa-arrow-right text-primary me-2"></i>
+                        {{ factor }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if recommendations %}
+            <div class="recommendations-section">
+                <h5>
+                    <i class="fas fa-lightbulb text-success"></i>
+                    Actionable Recommendations
+                </h5>
+                {% for rec in recommendations %}
+                    <div class="recommendation-item">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        {{ rec }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <h5 class="mb-3">
+                <i class="fas fa-tools me-2"></i>Quick Actions
+            </h5>
+            <div class="row">
+                <div class="col-md-4 mb-2">
+                    <button class="btn btn-outline-primary w-100">
+                        <i class="fas fa-phone me-1"></i>Call Customer
+                    </button>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <button class="btn btn-outline-success w-100">
+                        <i class="fas fa-gift me-1"></i>Send Offer
+                    </button>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <button class="btn btn-outline-info w-100">
+                        <i class="fas fa-chart-line me-1"></i>View History
+                    </button>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h1>
+                <i class="fas fa-chart-line me-3"></i>
+                Welcome to Churn Predictor Pro
+            </h1>
+            <p>
+                Leverage the power of AI to predict customer churn and take proactive steps to retain your valuable customers. 
+                Enter customer details in the sidebar to get started.
+            </p>
+        </div>
+
+        <!-- Features Overview -->
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-brain fa-3x text-primary mb-3"></i>
+                        <h5>AI-Powered</h5>
+                        <p class="text-muted">Advanced machine learning algorithms for accurate predictions</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-chart-bar fa-3x text-success mb-3"></i>
+                        <h5>Actionable Insights</h5>
+                        <p class="text-muted">Get specific recommendations to prevent customer churn</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-bolt fa-3x text-warning mb-3"></i>
+                        <h5>Real-time Analysis</h5>
+                        <p class="text-muted">Instant predictions with detailed risk factor analysis</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Getting Started -->
+        <div class="card">
+            <h5 class="mb-3">
+                <i class="fas fa-rocket me-2"></i>Getting Started
+            </h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <h6><i class="fas fa-1 me-2 text-primary"></i>Enter Customer Data</h6>
+                    <p class="text-muted">Fill in the customer details in the sidebar form</p>
+                </div>
+                <div class="col-md-6">
+                    <h6><i class="fas fa-2 me-2 text-success"></i>Get Prediction</h6>
+                    <p class="text-muted">Click "Predict Churn Risk" to analyze the customer</p>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <h6><i class="fas fa-3 me-2 text-warning"></i>Review Factors</h6>
+                    <p class="text-muted">Understand the key risk factors affecting churn</p>
+                </div>
+                <div class="col-md-6">
+                    <h6><i class="fas fa-4 me-2 text-info"></i>Take Action</h6>
+                    <p class="text-muted">Follow the recommendations to retain the customer</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
