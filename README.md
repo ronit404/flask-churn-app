@@ -182,14 +182,6 @@ For production deployment, consider:
 - Implementing HTTPS
 - Setting up monitoring and logging
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -201,14 +193,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - SHAP developers for model interpretability
 - Bootstrap team for the responsive CSS framework
 
-## 📞 Support
-
-For support and questions:
-- Create an issue in the repository
-- Contact the development team
-- Check the documentation
-
 ---
 
 **Made with ❤️ for better customer retention**
+
 
