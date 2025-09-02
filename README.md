@@ -182,10 +182,6 @@ For production deployment, consider:
 - Implementing HTTPS
 - Setting up monitoring and logging
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ## 🙏 Acknowledgments
 
 - Flask community for the excellent web framework
@@ -196,5 +192,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 **Made with ❤️ for better customer retention**
+
 
 
